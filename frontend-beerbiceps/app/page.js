@@ -1,101 +1,93 @@
 import Image from "next/image";
+import FUITestimonialWithGrid from "./components/testimonial";
+import clsx from "clsx";
+export function BentoCard({
+  className = "",
+  eyebrow,
+  title,
+  description,
+  graphic,
+  fade = [],
+}) {
+  return (
+    <div
+      className={clsx(
+        className,
+        "group relative flex flex-col overflow-hidden rounded-lg",
+        "bg-transparent transform-gpu dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#8686f01f_inset]   shadow-sm ring-1 ring-black/5",
+        "data-[dark]:bg-gray-800 data-[dark]:ring-white/15"
+      )}
+    >
+      <div className="relative h-[14rem] shrink-0">
+        {graphic}
+        {fade.includes("top") && (
+          <div className="absolute inset-0 bg-gradient-to-b from-white to-50%  opacity-25" />
+        )}
+        {fade.includes("bottom") && (
+          <div className="absolute inset-0 bg-gradient-to-t from-white to-50% opacity-25" />
+        )}
+      </div>
+      <div className="relative p-10  z-20 isolate mt-[-110px] h-[14rem] backdrop-blur-xl group-hover:backdrop-blur-lg transition-all duration-300">
+        <h1>{eyebrow}</h1>
+        <p className="mt-1 text-2xl/8 font-medium tracking-tight text-gray-100 group-data-[dark]:text-white group-hover:underline transition-all duration-300">
+          {title}
+        </p>
+        <p className="mt-2 max-w-[600px] text-sm/6 text-gray-300 group-data-[dark]:text-gray-400">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="max-w-screen-xl z-10 mx-auto px-4 py-28 gap-12 text-gray-600 md:px-8">
+      <div className="space-y-10 max-w-4xl leading-0  lg:leading-5 mx-auto text-center">
+        <h2 className="text-4xl tracking-tighter  bg-clip-text bg-[linear-gradient(180deg,_#FFF_0%,_rgba(255,_255,_255,_0.00)_202.08%)] text-transparent   mx-auto md:text-7xl">
+          We'll help you analyze your Instagram Feed{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-orange-200">
+            and help you grow your brand!
+          </span>
+        </h2>
+        <p className="max-w-2xl mx-auto text-muted-foreground">
+          We have analytics to show which type of post will get you the most
+          engagement in general and for your account aswell!
+        </p>
+        <div className="items-center  justify-center gap-x-3 space-y-3 sm:flex sm:space-y-0">
+          <span className="relative inline-block overflow-hidden rounded-full p-[1.5px]">
+            <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+            <div className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-950  text-xs font-medium text-gray-50 backdrop-blur-3xl">
+              <a
+                href="javascript:void(0)"
+                className="inline-flex rounded-full text-center group items-center w-full justify-center   bg-gradient-to-tr from-zinc-300/5 via-purple-400/20 to-transparent    text-white border-input border-[1px] hover:bg-transparent/90 transition-colors sm:w-auto py-4 px-10"
+              >
+                See the results!
+              </a>
+            </div>
+          </span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+      <div className="mt-10 grid grid-cols-1 md:grid-cols-2">
+        <BentoCard
+          eyebrow="Insight"
+          title="Get perfect clarity"
+          description="See which type of post will get you the most engagement on instagram along with a personalized chat bot to help you deeper analyze instagram algorithm."
+          graphic={
+            <div className="absolute inset-0 bg-[url(https://framerusercontent.com/images/ghyfFEStl6BNusZl0ZQd5r7JpM.png)] object-fill" />
+          }
+          className="max-lg:rounded-t-4xl lg:rounded-tl-4xl"
+        />
+        <BentoCard
+          eyebrow="Deeper Analysis"
+          title="Undercut your competitors"
+          description="We will analyze your Instagram feed and provide you with the insights you need to grow your brand!"
+          graphic={
+            <div className="absolute inset-0 bg-[url(https://framerusercontent.com/images/7CJtT0Pu3w1vNADktNltoMFC9J4.png)] object-fill" />
+          }
+          className="lg:rounded-tr-4xl"
+        />
+      </div>
     </div>
   );
 }
