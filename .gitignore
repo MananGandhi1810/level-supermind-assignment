@@ -1,2 +1,3 @@
 scraper/.env
 scraper/dataset.csv
+backend/.env
