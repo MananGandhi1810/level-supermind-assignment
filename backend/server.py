@@ -1,16 +1,29 @@
+from flask import Flask, request, jsonify
 from instagrapi import Client
 import os
 import pandas as pd
 import json
 import dotenv
+import pickle
 
 dotenv.load_dotenv()
 
 ACCOUNT_USERNAME = os.environ.get("ACCOUNT_USERNAME")
 ACCOUNT_PASSWORD = os.environ.get("ACCOUNT_PASSWORD")
 
-cl = Client()
-cl.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+app = Flask(__name__)
+
+cl = None
+
+if os.path.isfile("account.pkl"):
+    f = open("account.pkl", "rb")
+    cl = pickle.load(f)
+    f.close()
+else:
+    cl = Client()
+    cl.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+    with open("account.pkl", "wb") as f:
+        pickle.dump(cl, f)
 
 
 def collect_data(username):
@@ -25,22 +38,28 @@ def collect_data(username):
     media = media[
         [
             "taken_at",
-            "media_type",
             "product_type",
             "comment_count",
             "like_count",
             "play_count",
             "caption_text",
-            "usertags",
-            "video_url",
             "view_count",
-            "video_duration",
             "username",
             "location_name",
         ]
     ]
-    print(media.head)
     return media
 
 
-collect_data("neurotechh")
+@app.get("/scrape")
+def scrape():
+    username = request.args.get("username")
+    if not username:
+        return jsonify({"success": False})
+    user_data = collect_data(username)
+    print(user_data.head())
+    return jsonify({"success": True})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

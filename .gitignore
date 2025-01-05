@@ -1,3 +1,4 @@
 scraper/.env
 scraper/dataset.csv
 backend/.env
+backend/account.pkl
