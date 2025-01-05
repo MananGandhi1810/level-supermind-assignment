@@ -4,11 +4,14 @@ import os
 import pandas as pd
 import dotenv
 import pickle
+from astrapy import DataAPIClient
 
 dotenv.load_dotenv()
 
 ACCOUNT_USERNAME = os.environ.get("ACCOUNT_USERNAME")
 ACCOUNT_PASSWORD = os.environ.get("ACCOUNT_PASSWORD")
+ASTRA_DB_TOKEN = os.environ.get("ASTRA_DB_TOKEN")
+ASTRA_DB_ID = os.environ.get("ASTRA_DB_ID")
 
 app = Flask(__name__)
 
@@ -23,6 +26,13 @@ else:
     cl.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
     with open("account.pkl", "wb") as f:
         pickle.dump(cl, f)
+
+client = DataAPIClient(ASTRA_DB_TOKEN)
+db = client.get_database_by_api_endpoint(
+  "https://76def820-552c-4b62-a2de-db7646bb920a-us-east1.apps.astra.datastax.com"
+)
+
+collection = db.get_collection(ASTRA_DB_ID)
 
 
 def collect_data(username):
@@ -56,7 +66,25 @@ def scrape():
     if not username:
         return jsonify({"success": False})
     user_data = collect_data(username)
-    print(user_data.head())
+
+    user_data = user_data.to_dict(orient="records")
+
+    collection.insert_many(
+    [
+        {
+            "taken_at": x["taken_at"],
+            "product_type": x["product_type"],
+            "comment_count": x["comment_count"],
+            "like_count": x["like_count"],
+            "play_count": x["play_count"],
+            "caption_text": x["caption_text"],
+            "view_count": x["view_count"],
+            "username": x["username"],
+            "location_name": x["location_name"],
+        }
+        for x in user_data
+    ],
+)
     return jsonify({"success": True})
 
 
