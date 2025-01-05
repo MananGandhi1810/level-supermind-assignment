@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from instagrapi import Client
 import os
 import pandas as pd
-import json
 import dotenv
 import pickle
 
