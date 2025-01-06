@@ -62,11 +62,14 @@ def scrape():
     username = request.args.get("username")
     if not username:
         return jsonify({"success": False})
-    user_data = collect_data(username)
 
+    if username in db.list_collection_names():
+        return jsonify({"success": True})
+
+    user_data = collect_data(username)
     user_data = user_data.to_dict(orient="records")
     collection = db.create_collection(username)
-
+    print(user_data.head())
     collection.insert_many(
         [
             {
