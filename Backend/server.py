@@ -1,24 +1,22 @@
-from flask import Flask, request, jsonify
-from instagrapi import Client
+import asyncio
 import os
-import pandas as pd
-import dotenv
 import pickle
 from astrapy import DataAPIClient
-import asyncio
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-
-dotenv.load_dotenv()
+from instagrapi import Client
+import pandas as pd
 
 ACCOUNT_USERNAME = os.environ.get("ACCOUNT_USERNAME")
 ACCOUNT_PASSWORD = os.environ.get("ACCOUNT_PASSWORD")
 ASTRA_DB_TOKEN = os.environ.get("ASTRA_DB_TOKEN")
+
 app = Flask(__name__)
 cors = CORS(app)
-
+cl = Client()
+client = DataAPIClient(ASTRA_DB_TOKEN)
 
 cl = None
-
 if os.path.isfile("account.pkl"):
     f = open("account.pkl", "rb")
     cl = pickle.load(f)
@@ -28,12 +26,13 @@ else:
     cl.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
     with open("account.pkl", "wb") as f:
         pickle.dump(cl, f)
+print(f"Logged in as {ACCOUNT_USERNAME}")
 
-client = DataAPIClient(ASTRA_DB_TOKEN)
 db = client.get_database_by_api_endpoint(
     "https://76def820-552c-4b62-a2de-db7646bb920a-us-east1.apps.astra.datastax.com"
 )
 username_collection = db.get_collection("uploaded_usernames")
+print("Connected to AstraDB")
 
 
 async def collect_data(username):
@@ -81,6 +80,11 @@ async def collect_data(username):
         ],
     )
     username_collection.update_one({"username": username}, {"status": "uploaded"})
+
+
+@app.route("/")
+def home():
+    return jsonify({"message": "LS Backend API"})
 
 
 @app.get("/scrape")

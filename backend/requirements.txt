@@ -1,6 +1,0 @@
-flask
-instagrapi
-pandas
-python-dotenv
-astrapy
-flask-cors
