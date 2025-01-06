@@ -5,6 +5,8 @@ import pandas as pd
 import dotenv
 import pickle
 from astrapy import DataAPIClient
+import asyncio
+import time
 
 dotenv.load_dotenv()
 
@@ -30,18 +32,23 @@ client = DataAPIClient(ASTRA_DB_TOKEN)
 db = client.get_database_by_api_endpoint(
     "https://76def820-552c-4b62-a2de-db7646bb920a-us-east1.apps.astra.datastax.com"
 )
+username_collection = db.get_collection("uploaded_usernames")
 
 
-def collect_data(username):
+async def collect_data(username):
+    username_collection.insert_one({"username": username, "status": "processing"})
     user = cl.user_info_by_username_v1(username)
     raw_medias = cl.user_medias(user.pk)
     media = [x.model_dump() for x in raw_medias]
+    if len(media) == 0:
+        username_collection.delete_one({"username": username})
+        return
     media = pd.DataFrame({k: [x[k] for x in media] for k in media[0]})
     media["username"] = media.apply(lambda x: x.user["username"], axis=1)
     media["location_name"] = media.apply(
         lambda x: x.location.get("name") if x.location else "", axis=1
     )
-    media = media[
+    user_data = media[
         [
             "taken_at",
             "product_type",
@@ -54,22 +61,8 @@ def collect_data(username):
             "location_name",
         ]
     ]
-    return media
-
-
-@app.get("/scrape")
-def scrape():
-    username = request.args.get("username")
-    if not username:
-        return jsonify({"success": False})
-
-    if username in db.list_collection_names():
-        return jsonify({"success": True})
-
-    user_data = collect_data(username)
     user_data = user_data.to_dict(orient="records")
     collection = db.create_collection(username)
-    print(user_data.head())
     collection.insert_many(
         [
             {
@@ -86,7 +79,38 @@ def scrape():
             for x in user_data
         ],
     )
+    username_collection.update_one({"username": username}, {"status": "uploaded"})
+
+
+@app.get("/scrape")
+def scrape():
+    username = request.args.get("username")
+    if not username:
+        return jsonify({"success": False})
+
+    if username in db.list_collection_names():
+        return jsonify({"success": True})
+
+    if username_collection.find_one({"username": username}):
+        return jsonify({"success": True})
+
+    asyncio.run(collect_data(username))
     return jsonify({"success": True})
+
+
+@app.get("/status")
+def status():
+    username = request.args.get("username")
+    if not username:
+        return jsonify({"success": False, "status": None})
+
+    if username in db.list_collection_names():
+        return jsonify({"success": True, "status": "uploaded"})
+
+    if username_collection.find_one({"username": username}):
+        return jsonify({"success": True, "status": "processing"})
+
+    return jsonify({"success": False, "status": None})
 
 
 if __name__ == "__main__":
