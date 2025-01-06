@@ -9,4 +9,4 @@ COPY server.py server.py
 
 EXPOSE 8081
 
-CMD ["python3", "-m" , "flask", "run", "--host=0.0.0.0", "--app=server.py", "--port=8081"]
+CMD ["python3", "-m" , "flask", "--host=0.0.0.0", "--app server.py", "--port 8081", "run"]
