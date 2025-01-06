@@ -14,7 +14,7 @@ export default function Page() {
           <InstagramCharts />
         </div>
       </div>
-      <div className="w-[25%] flex-shrink-0">
+      <div className="hidden md:block w-[25%] flex-shrink-0">
         <ChatInterface />
       </div>
     </div>

@@ -63,7 +63,7 @@ export default function InstagramCharts() {
         </h1>
         <span className="text-muted-foreground space-x-3 group hover:underline">
           Download Dataset
-          <Download className="size-5 ml-3 text-muted-foreground inline-block group-hover:text-white" /> 
+          <Download className="size-5 ml-3 text-muted-foreground inline-block group-hover:text-white" />
         </span>
       </section>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -91,7 +91,7 @@ export default function InstagramCharts() {
               className="h-[300px]"
             >
               <ResponsiveContainer>
-                <PieChart>
+                <PieChart className="md:!w-fit !w-3/4">
                   <Pie
                     data={postDistributionData}
                     cx="50%"

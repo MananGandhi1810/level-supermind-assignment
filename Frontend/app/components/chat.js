@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Markdown from "react-markdown";
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState([
@@ -23,17 +24,56 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
 
+  // const handleSend = () => {
+  //   if (input.trim()) {
+  //     setMessages([...messages, { role: "user", content: input }]);
+  //     // Here you would typically send the message to a backend or AI service
+  //     // For now, we'll just echo the message back
+
+  //     setTimeout(() => {
+  //       setMessages((msgs) => [
+  //         ...msgs,
+  //         { role: "system", content: `You said: ${input}` },
+  //       ]);
+  //     }, 500);
+  //     setInput("");
+  //   }
+  // };
   const handleSend = () => {
     if (input.trim()) {
       setMessages([...messages, { role: "user", content: input }]);
-      // Here you would typically send the message to a backend or AI service
-      // For now, we'll just echo the message back
-      setTimeout(() => {
-        setMessages((msgs) => [
-          ...msgs,
-          { role: "system", content: `You said: ${input}` },
-        ]);
-      }, 500);
+      setMessages((msgs) => [
+        ...msgs,
+        { role: "system", content: "Thinking..." },
+      ]);
+      fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ input_value: input }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("API request failed");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const aiResponse = data.output || "No response from AI";
+          setMessages((msgs) => [
+            ...msgs.slice(0, -1),
+            { role: "system", content: aiResponse },
+          ]);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setMessages((msgs) => [
+            ...msgs.slice(0, -1),
+            { role: "system", content: aiResponse },
+          ]);
+        });
+
       setInput("");
     }
   };
@@ -69,9 +109,9 @@ export default function ChatInterface() {
                   </Avatar>
                 )}
 
-                <div className="ml-3"></div>
+                {/* <div className="ml-3"></div> */}
 
-                {message.content}
+                <Markdown>{message.content}</Markdown>
               </div>
             </div>
           ))}
