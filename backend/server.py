@@ -6,15 +6,16 @@ import dotenv
 import pickle
 from astrapy import DataAPIClient
 import asyncio
-import time
+from flask_cors import CORS
 
 dotenv.load_dotenv()
 
 ACCOUNT_USERNAME = os.environ.get("ACCOUNT_USERNAME")
 ACCOUNT_PASSWORD = os.environ.get("ACCOUNT_PASSWORD")
 ASTRA_DB_TOKEN = os.environ.get("ASTRA_DB_TOKEN")
-
 app = Flask(__name__)
+cors = CORS(app)
+
 
 cl = None
 
