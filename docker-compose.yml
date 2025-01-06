@@ -16,3 +16,5 @@ services:
       - 3000:3000/tcp
     depends_on:
       - lsa-backend
+    env_file:
+      - .env
