@@ -1,4 +1,3 @@
-import asyncio
 import os
 import pickle
 from astrapy import DataAPIClient
@@ -6,6 +5,10 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from instagrapi import Client
 import pandas as pd
+import dotenv
+import threading
+
+dotenv.load_dotenv()
 
 ACCOUNT_USERNAME = os.environ.get("ACCOUNT_USERNAME")
 ACCOUNT_PASSWORD = os.environ.get("ACCOUNT_PASSWORD")
@@ -35,14 +38,23 @@ username_collection = db.get_collection("uploaded_usernames")
 print("Connected to AstraDB")
 
 
-async def collect_data(username):
-    username_collection.insert_one({"username": username, "status": "processing"})
-    user = cl.user_info_by_username_v1(username)
-    raw_medias = cl.user_medias(user.pk)
-    media = [x.model_dump() for x in raw_medias]
-    if len(media) == 0:
-        username_collection.delete_one({"username": username})
+def collect_data(raw_username):
+    username_collection.insert_one({"username": raw_username, "status": "processing"})
+    try:
+        user = cl.user_info_by_username_v1(raw_username)
+        raw_medias = cl.user_medias(user.pk)
+    except:
+        username_collection.update_one(
+            {"username": raw_username}, {"$set": {"status": "error"}}
+        )
         return
+    if len(raw_medias) == 0:
+        username_collection.update_one(
+            {"username": raw_username}, {"$set": {"status": "not found"}}
+        )
+        return
+    username = raw_username.replace(".", "_d_o_t_")
+    media = [x.model_dump() for x in raw_medias]
     media = pd.DataFrame({k: [x[k] for x in media] for k in media[0]})
     media["username"] = media.apply(lambda x: x.user["username"], axis=1)
     media["location_name"] = media.apply(
@@ -62,7 +74,7 @@ async def collect_data(username):
         ]
     ]
     user_data = user_data.to_dict(orient="records")
-    collection = db.create_collection(username)
+    collection = db.create_collection(f"user_{username}")
     collection.insert_many(
         [
             {
@@ -79,7 +91,9 @@ async def collect_data(username):
             for x in user_data
         ],
     )
-    username_collection.update_one({"username": username}, {"status": "uploaded"})
+    username_collection.update_one(
+        {"username": raw_username}, {"$set": {"status": "uploaded"}}
+    )
 
 
 @app.route("/")
@@ -93,27 +107,29 @@ def scrape():
     if not username:
         return jsonify({"success": False})
 
-    if username in db.list_collection_names():
+    if f"user_{username}" in db.list_collection_names():
         return jsonify({"success": True})
 
     if username_collection.find_one({"username": username}):
         return jsonify({"success": True})
 
-    asyncio.run(collect_data(username))
+    threading.Thread(target=collect_data, args=(username,)).start()
     return jsonify({"success": True})
 
 
 @app.get("/status")
 def status():
-    username = request.args.get("username")
+    raw_username = request.args.get("username")
+    username = raw_username.replace(".", "_d_o_t_")
     if not username:
         return jsonify({"success": False, "status": None})
 
-    if username in db.list_collection_names():
+    if f"user_{username}" in db.list_collection_names():
         return jsonify({"success": True, "status": "uploaded"})
 
-    if username_collection.find_one({"username": username}):
-        return jsonify({"success": True, "status": "processing"})
+    db_entry = username_collection.find_one({"username": raw_username})
+    if db_entry:
+        return jsonify({"success": True, "status": db_entry["status"]})
 
     return jsonify({"success": False, "status": None})
 
