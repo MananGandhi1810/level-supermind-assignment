@@ -74,7 +74,7 @@ def collect_data(raw_username):
         ]
     ]
     user_data = user_data.to_dict(orient="records")
-    collection = db.create_collection(username)
+    collection = db.create_collection(f"user_{username}")
     collection.insert_many(
         [
             {
@@ -107,7 +107,7 @@ def scrape():
     if not username:
         return jsonify({"success": False})
 
-    if username in db.list_collection_names():
+    if f"user_{username}" in db.list_collection_names():
         return jsonify({"success": True})
 
     if username_collection.find_one({"username": username}):
@@ -124,7 +124,7 @@ def status():
     if not username:
         return jsonify({"success": False, "status": None})
 
-    if username in db.list_collection_names():
+    if f"user_{username}" in db.list_collection_names():
         return jsonify({"success": True, "status": "uploaded"})
 
     db_entry = username_collection.find_one({"username": raw_username})
