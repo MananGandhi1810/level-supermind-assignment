@@ -39,10 +39,10 @@ async def collect_data(username):
     username_collection.insert_one({"username": username, "status": "processing"})
     user = cl.user_info_by_username_v1(username)
     raw_medias = cl.user_medias(user.pk)
-    media = [x.model_dump() for x in raw_medias]
-    if len(media) == 0:
-        username_collection.delete_one({"username": username})
+    if len(raw_medias) == 0:
+        username_collection.update_one({"username": username}, {"status": "not found"})
         return
+    media = [x.model_dump() for x in raw_medias]
     media = pd.DataFrame({k: [x[k] for x in media] for k in media[0]})
     media["username"] = media.apply(lambda x: x.user["username"], axis=1)
     media["location_name"] = media.apply(
