@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
-  const url = process.env.ASTRA_API_URL;
-  const token = process.env.ASTRA_AUTH_TOKEN;
+  const url = process.env.LANGFLOW_API_URL;
+  const token = process.env.LANGFLOW_AUTH_TOKEN;
 
   try {
     const { input_value } = await request.json();
@@ -20,7 +20,10 @@ export async function POST(request) {
       input_type: "chat",
       tweaks: {
         "Prompt-dEcXZ": {},
-        "AstraDBToolComponent-6lYlE": {},
+        "AstraDBToolComponent-6lYlE": {
+          "collection_name": "neurotechh",
+          "token": process.env.ASTRA_AUTH_TOKEN
+        },
         "ChatOutput-rTz8f": {},
         "ChatInput-XHqvG": {},
         "ParseData-FRQuY": {},
