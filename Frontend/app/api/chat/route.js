@@ -6,12 +6,18 @@ export async function POST(request) {
 
   try {
     const { input_value, username } = await request.json();
+    let collection_name;
 
     if (!input_value) {
       return NextResponse.json(
         { error: "Input value is required." },
         { status: 400 }
       );
+    }
+    if (username == null || username == "") {
+      collection_name = "sqlagent";
+    } else {
+      collection_name = "user_" + username;
     }
 
     const body = {
@@ -21,7 +27,7 @@ export async function POST(request) {
       tweaks: {
         "Prompt-dEcXZ": {},
         "AstraDBToolComponent-6lYlE": {
-          collection_name: "user_" + username,
+          collection_name,
           token: process.env.ASTRA_DB_TOKEN,
         },
         "ChatOutput-rTz8f": {},
