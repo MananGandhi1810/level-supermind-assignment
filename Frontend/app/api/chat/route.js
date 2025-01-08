@@ -10,7 +10,7 @@ export async function POST(request) {
     if (!input_value) {
       return NextResponse.json(
         { error: "Input value is required." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -21,14 +21,13 @@ export async function POST(request) {
       tweaks: {
         "Prompt-dEcXZ": {},
         "AstraDBToolComponent-6lYlE": {
-          collection_name: "user_" + username,
-          token: process.env.ASTRA_DB_TOKEN,
+          collection_name: username != "" ? "user_" + username : "sqlagent",
+          token: process.env.ASTRA_AUTH_TOKEN,
         },
         "ChatOutput-rTz8f": {},
         "ChatInput-XHqvG": {},
         "ParseData-FRQuY": {},
         "GoogleGenerativeAIModel-xQxiD": {},
-        "Agent-BrM99": {},
         "CalculatorTool-459TW": {},
       },
     };
@@ -56,7 +55,7 @@ export async function POST(request) {
     console.error("Error in API handler:", error);
     return NextResponse.json(
       { error: "Failed to process the request. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
