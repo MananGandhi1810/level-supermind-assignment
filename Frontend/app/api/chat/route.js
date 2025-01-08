@@ -6,12 +6,18 @@ export async function POST(request) {
 
   try {
     const { input_value, username } = await request.json();
+    let collection_name;
 
     if (!input_value) {
       return NextResponse.json(
         { error: "Input value is required." },
         { status: 400 },
       );
+    }
+    if (username == null || username == "") {
+      collection_name = "sqlagent";
+    } else {
+      collection_name = "user_" + username;
     }
 
     const body = {
