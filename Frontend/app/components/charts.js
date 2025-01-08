@@ -26,6 +26,7 @@ import {
   Cell,
 } from "recharts";
 import { ArrowUpIcon, ArrowDownIcon, Download } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const postDistributionData = [
   { name: "Reel", value: 35 },
@@ -55,12 +56,22 @@ const performanceData = Array.from({ length: 30 }, (_, i) => ({
 const COLORS = ["#FF7F6A", "#4FD1C5", "#2C5282"];
 
 export default function InstagramCharts() {
+  const [username, setUsername] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedData = sessionStorage.getItem("username");
+      if (storedData) {
+        setUsername(storedData);
+      }
+    }
+  }, []);
   return (
     <>
       <section className=" flex flex-row justify-between items-center py-10">
         <h1 className="text-4xl tracking-tighter  bg-clip-text bg-[linear-gradient(180deg,_#FFF_0%,_rgba(255,_255,_255,_0.00)_202.08%)] text-transparent md:text-7xl py-1">
           YetiLytics
         </h1>
+        <h2>{username}</h2>
         <span className="text-muted-foreground space-x-3 group hover:underline">
           Download Dataset
           <Download className="size-5 ml-3 text-muted-foreground inline-block group-hover:text-white" />

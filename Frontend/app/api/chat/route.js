@@ -5,7 +5,7 @@ export async function POST(request) {
   const token = process.env.LANGFLOW_AUTH_TOKEN;
 
   try {
-    const { input_value } = await request.json();
+    const { input_value, username } = await request.json();
 
     if (!input_value) {
       return NextResponse.json(
@@ -21,8 +21,8 @@ export async function POST(request) {
       tweaks: {
         "Prompt-dEcXZ": {},
         "AstraDBToolComponent-6lYlE": {
-          "collection_name": "neurotechh",
-          "token": process.env.ASTRA_AUTH_TOKEN
+          collection_name: "user_" + username,
+          token: process.env.ASTRA_DB_TOKEN,
         },
         "ChatOutput-rTz8f": {},
         "ChatInput-XHqvG": {},

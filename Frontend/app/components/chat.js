@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -23,6 +23,15 @@ export default function ChatInterface() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [username, setUsername] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedData = sessionStorage.getItem("username");
+      if (storedData) {
+        setUsername(storedData);
+      }
+    }
+  }, []);
 
   // const handleSend = () => {
   //   if (input.trim()) {
@@ -51,7 +60,7 @@ export default function ChatInterface() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ input_value: input }),
+        body: JSON.stringify({ input_value: input, username }),
       })
         .then((response) => {
           if (!response.ok) {
