@@ -110,7 +110,8 @@ def scrape():
     if f"user_{username}" in db.list_collection_names():
         return jsonify({"success": True})
 
-    if username_collection.find_one({"username": username}):
+    db_entry = username_collection.find_one({"username": username})
+    if db_entry and db_entry["status"] != "error":
         return jsonify({"success": True})
 
     threading.Thread(target=collect_data, args=(username,)).start()
