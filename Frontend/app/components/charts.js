@@ -29,7 +29,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowUpIcon, ArrowDownIcon, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 
-const COLORS = ["#FF7F6A", "#4FD1C5", "#2C5282"];
+const COLORS = ["#FF7F6A", "#4FD1C5", "#2C5282", "#FFFFFF"];
 
 export default function InstagramCharts() {
   const [username, setUsername] = useState(null);
@@ -90,7 +90,7 @@ export default function InstagramCharts() {
     }, {});
 
     const postDistributionArray = Object.entries(postDistributionData).map(
-      ([name, value]) => ({ name, value }),
+      ([name, value]) => ({ name, value })
     );
 
     const engagementSummaryData2 = documents
@@ -116,12 +116,12 @@ export default function InstagramCharts() {
 
     const totalEngagementData = documents.reduce(
       (acc, doc) => {
-        acc.likes += doc.like_count || 0;
-        acc.shares += doc.play_count || 0;
-        acc.comments += doc.comment_count || 0;
+        acc.likes += Number(doc.like_count || 0);
+        acc.shares += Number(doc.play_count || 0);
+        acc.comments += Number(doc.comment_count || 0);
         return acc;
       },
-      { likes: 0, shares: 0, comments: 0 },
+      { likes: 0, shares: 0, comments: 0 }
     );
 
     const performanceData = documents.map((doc) => ({
@@ -165,16 +165,12 @@ export default function InstagramCharts() {
           <CardContent>
             <ChartContainer
               config={{
-                reel: {
-                  label: "Reel",
+                clips: {
+                  label: "Reels",
                   color: COLORS[0],
                 },
                 feed: {
                   label: "Feed",
-                  color: COLORS[1],
-                },
-                carousel: {
-                  label: "Carousel",
                   color: COLORS[1],
                 },
                 static: {
