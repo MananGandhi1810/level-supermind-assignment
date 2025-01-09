@@ -32,7 +32,7 @@ import { useState, useEffect } from "react";
 const COLORS = ["#FF7F6A", "#4FD1C5", "#2C5282"];
 
 export default function InstagramCharts() {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(null);
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const searchParams = useSearchParams();
@@ -42,16 +42,10 @@ export default function InstagramCharts() {
     const usernameParam = searchParams.get("username");
     if (usernameParam) {
       setUsername(usernameParam);
-      sessionStorage.setItem("username", usernameParam);
     } else {
-      const storedUsername = sessionStorage.getItem("username");
-      if (storedUsername) {
-        router.push(`/insights?username=${storedUsername}`);
-      } else {
-        setUsername("");
-      }
+      setUsername("");
     }
-  }, [searchParams, router]);
+  }, [router]);
 
   const clearUsername = () => {
     setUsername("");
@@ -83,7 +77,7 @@ export default function InstagramCharts() {
   };
 
   useEffect(() => {
-    if (username) {
+    if (username != null) {
       fetchRecords();
     }
   }, [username]);
@@ -96,7 +90,7 @@ export default function InstagramCharts() {
     }, {});
 
     const postDistributionArray = Object.entries(postDistributionData).map(
-      ([name, value]) => ({ name, value })
+      ([name, value]) => ({ name, value }),
     );
 
     const engagementSummaryData2 = documents
@@ -127,7 +121,7 @@ export default function InstagramCharts() {
         acc.comments += doc.comment_count || 0;
         return acc;
       },
-      { likes: 0, shares: 0, comments: 0 }
+      { likes: 0, shares: 0, comments: 0 },
     );
 
     const performanceData = documents.map((doc) => ({
@@ -161,7 +155,7 @@ export default function InstagramCharts() {
           <Download className="size-5 ml-3 text-muted-foreground inline-block group-hover:text-white" />
         </span>
       </section>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {/* Post Distribution Card */}
         <Card>
           <CardHeader>
@@ -218,7 +212,7 @@ export default function InstagramCharts() {
           </CardContent>
         </Card>
 
-        {/* Engagement Summary Card */}
+        {/* Engagement Summary Card
         <Card>
           <CardHeader>
             <CardTitle>Engagement Summary</CardTitle>
@@ -235,7 +229,7 @@ export default function InstagramCharts() {
                     <span className="font-medium">{item.type}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono">{item.value.toFixed(1)}%</span>
+                    <span className="font-mono">{item.value}%</span>
                     {item.trend === "up" ? (
                       <ArrowUpIcon className="w-4 h-4 text-green-500" />
                     ) : (
@@ -246,7 +240,7 @@ export default function InstagramCharts() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Total Engagement Card */}
         <Card className="md:col-span-2">

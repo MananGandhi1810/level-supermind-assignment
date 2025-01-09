@@ -24,7 +24,14 @@ async function fetchRecords(collectionName) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const data = await response.json();
+    var data = await response.json();
+    if (collectionName == "sqlagent") {
+      data.data.documents = data.data.documents.map((d) => ({
+        ...d,
+        taken_at: { $date: Date.parse(d.taken_at).valueOf() },
+      }));
+    }
+    console.log(data.data.documents);
     return data.data || [];
   } catch (error) {
     console.error("Error during fetch:", error);
@@ -44,7 +51,7 @@ export async function POST(request) {
     console.error("API Route Error:", error);
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
