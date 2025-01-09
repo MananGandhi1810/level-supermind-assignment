@@ -26,39 +26,15 @@ import {
   Cell,
 } from "recharts";
 import { useSearchParams, useRouter } from "next/navigation";
-
 import { ArrowUpIcon, ArrowDownIcon, Download } from "lucide-react";
 import { useState, useEffect } from "react";
-
-const postDistributionData = [
-  { name: "Reel", value: 35 },
-  { name: "Carousel", value: 40 },
-  { name: "Static", value: 25 },
-];
-
-const engagementSummaryData = [
-  { type: "Reel", value: 59802.4, trend: "up" },
-  { type: "Carousel", value: 41606.0, trend: "up" },
-  { type: "Static", value: 28646.8, trend: "down" },
-];
-
-const totalEngagementData = {
-  likes: 171975,
-  shares: 37576,
-  comments: 20339,
-};
-
-const performanceData = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(2024, 0, i + 1).toISOString().split("T")[0],
-  likes: Math.floor(Math.random() * 4000 + 1000),
-  shares: Math.floor(Math.random() * 800 + 200),
-  comments: Math.floor(Math.random() * 400 + 100),
-}));
 
 const COLORS = ["#FF7F6A", "#4FD1C5", "#2C5282"];
 
 export default function InstagramCharts() {
   const [username, setUsername] = useState("");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -82,6 +58,97 @@ export default function InstagramCharts() {
     sessionStorage.removeItem("username");
     router.push("/insights");
   };
+
+  const fetchRecords = async () => {
+    try {
+      const response = await fetch("/api/fetch-records", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Unknown error occurred");
+      }
+
+      setData(transformData(result));
+    } catch (err) {
+      setError(err.message);
+      setData(null);
+    }
+  };
+
+  useEffect(() => {
+    if (username) {
+      fetchRecords();
+    }
+  }, [username]);
+
+  const transformData = ({ data: { documents } }) => {
+    const postDistributionData = documents.reduce((acc, doc) => {
+      const type = doc.product_type || "Other";
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
+
+    const postDistributionArray = Object.entries(postDistributionData).map(
+      ([name, value]) => ({ name, value })
+    );
+
+    const engagementSummaryData2 = documents
+      .filter((doc) => doc.product_type === "" || doc.product_type === "feed") // Filter for "" and "feed"
+      .reduce((acc, doc) => {
+        const type = doc.product_type || "Other"; // Default to "Post" if product_type is empty
+        const currentValue =
+          doc.like_count + doc.comment_count + (doc.view_count || 0);
+        const currentTrend = doc.like_count > 50 ? "up" : "down";
+
+        // Accumulate value for each type using Map
+        if (acc.has(type)) {
+          const existing = acc.get(type);
+          existing.value += currentValue;
+          existing.trend = currentTrend; // Update the trend
+        } else {
+          acc.set(type, { type, value: currentValue, trend: currentTrend });
+        }
+        return acc;
+      }, new Map());
+
+    const engagementSummaryData = Array.from(engagementSummaryData2.values());
+
+    const totalEngagementData = documents.reduce(
+      (acc, doc) => {
+        acc.likes += doc.like_count || 0;
+        acc.shares += doc.play_count || 0;
+        acc.comments += doc.comment_count || 0;
+        return acc;
+      },
+      { likes: 0, shares: 0, comments: 0 }
+    );
+
+    const performanceData = documents.map((doc) => ({
+      date: new Date(doc.taken_at.$date).toISOString().split("T")[0],
+      likes: doc.like_count || 0,
+      shares: doc.play_count || 0,
+      comments: doc.comment_count || 0,
+    }));
+
+    return {
+      postDistributionData: postDistributionArray,
+      engagementSummaryData,
+      totalEngagementData,
+      performanceData,
+    };
+  };
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <>
       <section className=" flex flex-row justify-between items-center py-10">
@@ -95,6 +162,7 @@ export default function InstagramCharts() {
         </span>
       </section>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Post Distribution Card */}
         <Card>
           <CardHeader>
             <CardTitle>Post Distribution</CardTitle>
@@ -106,6 +174,10 @@ export default function InstagramCharts() {
                 reel: {
                   label: "Reel",
                   color: COLORS[0],
+                },
+                feed: {
+                  label: "Feed",
+                  color: COLORS[1],
                 },
                 carousel: {
                   label: "Carousel",
@@ -121,7 +193,7 @@ export default function InstagramCharts() {
               <ResponsiveContainer>
                 <PieChart className="md:!w-fit !w-3/4">
                   <Pie
-                    data={postDistributionData}
+                    data={data?.postDistributionData}
                     cx="50%"
                     cy="50%"
                     innerRadius={0}
@@ -132,7 +204,7 @@ export default function InstagramCharts() {
                       `${name} ${(percent * 100).toFixed(0)}%`
                     }
                   >
-                    {postDistributionData.map((entry, index) => (
+                    {data?.postDistributionData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
@@ -146,6 +218,7 @@ export default function InstagramCharts() {
           </CardContent>
         </Card>
 
+        {/* Engagement Summary Card */}
         <Card>
           <CardHeader>
             <CardTitle>Engagement Summary</CardTitle>
@@ -153,7 +226,7 @@ export default function InstagramCharts() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {engagementSummaryData.map((item) => (
+              {data?.engagementSummaryData.map((item) => (
                 <div
                   key={item.type}
                   className="flex items-center justify-between"
@@ -175,6 +248,7 @@ export default function InstagramCharts() {
           </CardContent>
         </Card>
 
+        {/* Total Engagement Card */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Total Engagement</CardTitle>
@@ -184,19 +258,19 @@ export default function InstagramCharts() {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <div className="text-2xl font-bold">
-                  {totalEngagementData.likes.toLocaleString()}
+                  {data?.totalEngagementData.likes.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Likes</div>
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {totalEngagementData.shares.toLocaleString()}
+                  {data?.totalEngagementData.shares.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Shares</div>
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {totalEngagementData.comments.toLocaleString()}
+                  {data?.totalEngagementData.comments.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">Comments</div>
               </div>
@@ -204,6 +278,7 @@ export default function InstagramCharts() {
           </CardContent>
         </Card>
 
+        {/* Post Performance Over Time Card */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Post Performance Over Time</CardTitle>
@@ -228,7 +303,7 @@ export default function InstagramCharts() {
               className="h-[300px] w-full"
             >
               <ResponsiveContainer>
-                <LineChart data={performanceData}>
+                <LineChart data={data?.performanceData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
@@ -268,7 +343,7 @@ export default function InstagramCharts() {
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>{" "}
+      </div>
     </>
   );
 }
