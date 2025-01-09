@@ -1,16 +1,19 @@
 import Image from "next/image";
 import FUITestimonialWithGrid from "./components/testimonial";
 import clsx from "clsx";
+import Link from "next/link";
 export function BentoCard({
   className = "",
   eyebrow,
   title,
   description,
   graphic,
+  url,
   fade = [],
 }) {
   return (
-    <div
+    <Link
+      href={url}
       className={clsx(
         className,
         "group relative flex flex-col overflow-hidden rounded-lg",
@@ -36,7 +39,7 @@ export function BentoCard({
           {description}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -72,6 +75,7 @@ export default function Home() {
         <BentoCard
           eyebrow="Insight"
           title="Get perfect clarity"
+          url="/insights"
           description="See which type of post will get you the most engagement on instagram along with a personalized chat bot to help you deeper analyze instagram algorithm."
           graphic={
             <div className="absolute inset-0 bg-[url(https://framerusercontent.com/images/ghyfFEStl6BNusZl0ZQd5r7JpM.png)] object-fill" />
@@ -81,6 +85,7 @@ export default function Home() {
         <BentoCard
           eyebrow="Deeper Analysis"
           title="Undercut your competitors"
+          url="/custom"
           description="We will analyze your Instagram feed and provide you with the insights you need to grow your brand!"
           graphic={
             <div className="absolute inset-0 bg-[url(https://framerusercontent.com/images/7CJtT0Pu3w1vNADktNltoMFC9J4.png)] object-fill" />

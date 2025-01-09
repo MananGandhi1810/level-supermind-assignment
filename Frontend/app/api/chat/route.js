@@ -14,21 +14,16 @@ export async function POST(request) {
         { status: 400 },
       );
     }
-    if (username == null || username == "") {
-      collection_name = "sqlagent";
-    } else {
-      collection_name = "user_" + username;
-    }
-
-    const body = {
+    let body;
+    if (username == "") {  body = {
       input_value,
       output_type: "chat",
       input_type: "chat",
       tweaks: {
         "Prompt-dEcXZ": {},
         "AstraDBToolComponent-6lYlE": {
-          collection_name: username != "" ? "user_" + username : "sqlagent",
-          token: process.env.ASTRA_AUTH_TOKEN,
+          collection_name: "sqlagent" ,
+          token: process.env.ASTRA_DB_TOKEN,
         },
         "ChatOutput-rTz8f": {},
         "ChatInput-XHqvG": {},
@@ -37,7 +32,26 @@ export async function POST(request) {
         "CalculatorTool-459TW": {},
       },
     };
-
+    } else {
+      body = {
+        input_value,
+        output_type: "chat",
+        input_type: "chat",
+        tweaks: {
+          "Prompt-dEcXZ": {},
+          "AstraDBToolComponent-6lYlE": {
+            collection_name: "user_" + username,
+            token: process.env.ASTRA_DB_TOKEN,
+          },
+          "ChatOutput-rTz8f": {},
+          "ChatInput-XHqvG": {},
+          "ParseData-FRQuY": {},
+          "GoogleGenerativeAIModel-xQxiD": {},
+          "Agent-BrM99": {},
+          "CalculatorTool-459TW": {},
+        },
+      };
+    }
     const response = await fetch(url, {
       method: "POST",
       headers: {

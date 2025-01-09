@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,30 +24,30 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState("");
   const [username, setUsername] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedData = sessionStorage.getItem("username");
-      if (storedData) {
-        setUsername(storedData);
+    const usernameParam = searchParams.get("username");
+    if (usernameParam) {
+      setUsername(usernameParam);
+      sessionStorage.setItem("username", usernameParam);
+    } else {
+      const storedUsername = sessionStorage.getItem("username");
+      if (storedUsername) {
+        router.push(`/insights?username=${storedUsername}`);
+      } else {
+        setUsername("");
       }
     }
-  }, []);
+  }, [searchParams, router]);
 
-  // const handleSend = () => {
-  //   if (input.trim()) {
-  //     setMessages([...messages, { role: "user", content: input }]);
-  //     // Here you would typically send the message to a backend or AI service
-  //     // For now, we'll just echo the message back
+  const clearUsername = () => {
+    setUsername("");
+    sessionStorage.removeItem("username");
+    router.push("/insights");
+  };
 
-  //     setTimeout(() => {
-  //       setMessages((msgs) => [
-  //         ...msgs,
-  //         { role: "system", content: `You said: ${input}` },
-  //       ]);
-  //     }, 500);
-  //     setInput("");
-  //   }
-  // };
   const handleSend = () => {
     if (input.trim()) {
       setMessages([...messages, { role: "user", content: input }]);
@@ -79,7 +79,10 @@ export default function ChatInterface() {
           console.error("Error:", error);
           setMessages((msgs) => [
             ...msgs.slice(0, -1),
-            { role: "system", content: aiResponse },
+            {
+              role: "system",
+              content: "An error occurred while processing your request.",
+            },
           ]);
         });
 
@@ -89,8 +92,13 @@ export default function ChatInterface() {
 
   return (
     <Card className="h-screen flex flex-col rounded-none">
-      <CardHeader className="flex-shrink-0">
+      <CardHeader className="flex-shrink-0 flex justify-between items-center">
         <CardTitle>Chat with AI Assistant</CardTitle>
+        {username && (
+          <Button onClick={clearUsername} variant="outline" size="sm">
+            Clear Username
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden p-4">
         <ScrollArea className="h-full w-full pr-4">
@@ -118,9 +126,13 @@ export default function ChatInterface() {
                   </Avatar>
                 )}
 
-                {/* <div className="ml-3"></div> */}
-
-                <Markdown>{message.content}</Markdown>
+                {message.content === "Thinking..." ? (
+                  <div className="animate-pulse">
+                    <Markdown>{message.content}</Markdown>
+                  </div>
+                ) : (
+                  <Markdown>{message.content}</Markdown>
+                )}
               </div>
             </div>
           ))}

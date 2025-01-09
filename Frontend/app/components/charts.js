@@ -25,6 +25,8 @@ import {
   Legend,
   Cell,
 } from "recharts";
+import { useSearchParams, useRouter } from "next/navigation";
+
 import { ArrowUpIcon, ArrowDownIcon, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -57,14 +59,29 @@ const COLORS = ["#FF7F6A", "#4FD1C5", "#2C5282"];
 
 export default function InstagramCharts() {
   const [username, setUsername] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedData = sessionStorage.getItem("username");
-      if (storedData) {
-        setUsername(storedData);
+    const usernameParam = searchParams.get("username");
+    if (usernameParam) {
+      setUsername(usernameParam);
+      sessionStorage.setItem("username", usernameParam);
+    } else {
+      const storedUsername = sessionStorage.getItem("username");
+      if (storedUsername) {
+        router.push(`/insights?username=${storedUsername}`);
+      } else {
+        setUsername("");
       }
     }
-  }, []);
+  }, [searchParams, router]);
+
+  const clearUsername = () => {
+    setUsername("");
+    sessionStorage.removeItem("username");
+    router.push("/insights");
+  };
   return (
     <>
       <section className=" flex flex-row justify-between items-center py-10">

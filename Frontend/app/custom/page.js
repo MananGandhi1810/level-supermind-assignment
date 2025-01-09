@@ -52,38 +52,46 @@ export default function Home() {
   };
 
   return (
-    <div className=" flex flex-col mt-4 justify-center items-center">
-      <h1 className="text-3xl font-semibold text-center text-blue-600 mb-4">
-        Enter Username
-      </h1>
-      <div className="flex flex-col items-center space-y-4">
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter username"
-          className="w-2/3 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-transparent"
-        />
-        <button
-          onClick={handleScrape}
-          disabled={loading || !username}
-          className={` py-3 px-6 text-white rounded-xl ${
-            loading
-              ? "bg-gray-400"
-              : "bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
-          }`}
-        >
-          {loading ? "Scraping..." : "Start Scrape"}
-        </button>
-        {status && (
-          <p
-            className={`mt-4 text-lg font-medium ${
-              status.includes("error") ? "text-red-500" : "text-green-500"
+    <div className="max-w-screen-xl z-10 mx-auto px-4 py-28 gap-12 text-gray-600 md:px-8">
+      <div className="space-y-10 max-w-4xl leading-0  lg:leading-5 mx-auto text-center">
+        <h2 className="text-4xl tracking-tighter  bg-clip-text bg-[linear-gradient(180deg,_#FFF_0%,_rgba(255,_255,_255,_0.00)_202.08%)] text-transparent   mx-auto md:text-7xl">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-orange-200">
+            Enter Username
+          </span>
+        </h2>
+        <p className="max-w-xl mx-auto text-muted-foreground">
+          The way it works is, we have a generalized scraped data from instagram from which you can derive the insights you need. But you may need specialized for your use case. So, you can enter your username and we will scrape the data for you.
+        </p>
+        <h1 className="text-3xl font-semibold text-center text-blue-600 mb-4"></h1>
+        <div className="flex flex-col items-center space-y-4">
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter username"
+            className="w-1/3 p-3 text-white border border-gray-300/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-transparent"
+          />
+          <button
+            onClick={handleScrape}
+            disabled={loading || !username}
+            className={` py-3 px-6 text-white rounded-xl ${
+              loading
+                ? "bg-gradient-to-tr from-zinc-300/5 via-purple-400/10 to-transparent text-muted-foreground border-input border-[1px] hover:bg-transparent/90 transition-colors "
+                : "bg-gradient-to-tr from-zinc-300/5 via-purple-400/20 to-transparent    text-white border-input border-[1px] hover:bg-transparent/90 transition-colors"
             }`}
           >
-            {status}
-          </p>
-        )}
+            {loading ? "Scraping..." : "Start Scrape"}
+          </button>
+          {status && (
+            <p
+              className={`mt-4 text-lg font-medium ${
+                status.includes("error") ? "text-red-500/50" : "text-green-500/50"
+              }`}
+            >
+              {status}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
